@@ -137,7 +137,11 @@ anything that isn't bitcoin · a business model
 
 ## Deploy
 
-Fewer parts than a second branch: GitHub Actions builds `dist/` and publishes it. `CNAME` lives in the repo (and `public/`, so Vite copies it into `dist/`).
+The committed path is GitHub Actions: `.github/workflows/pages.yml` builds `dist/` and publishes it. `CNAME` lives in the repo (and `public/`, so Vite copies it into `dist/`).
+
+**Deviation, now:** Actions jobs fail immediately because the GitHub account is locked on a billing issue. The live site is the `gh-pages` branch (legacy Pages source) — `index.html`, `CNAME`, and `og.png`. Once billing is unblocked, Actions becomes the sole deploy path and the `gh-pages` branch gets deleted. Do not keep both; do not treat the dual path as the design.
+
+Intended steps once Actions is the only path:
 
 1. Push to GitHub.
 2. Settings → Pages → Source: **GitHub Actions**.
@@ -156,4 +160,4 @@ snapsats.app.     AAAA   2606:50c0:8003::153
 www.snapsats.app. CNAME  <you>.github.io.
 ```
 
-The shipped artifact is `dist/index.html` (one file). It also renders from `file://`. Offline, the page still paints; the price feed and mint calls fail closed (sats-only labels, no invoice until the mint answers).
+The shipped artifact is `dist/index.html` (one file) plus `og.png` for link previews. It also renders from `file://`. Offline, the page still paints; the price feed and mint calls fail closed (sats-only labels, no invoice until the mint answers).

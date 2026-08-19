@@ -152,17 +152,69 @@ export async function createGift(amountSats, opts = {}) {
   };
 }
 
+function feeSatsForProofs(wallet, proofs) {
+  try {
+    return wallet.getFeesForProofs(proofs).toNumber();
+  } catch {
+    return 0;
+  }
+}
+
+function maxSpendableSats(wallet, proofs) {
+  try {
+    return wallet.maxSpendableAfterFees(proofs).toNumber();
+  } catch {
+    return sumSats(proofs);
+  }
+}
+
+export function reportedClaimFee(faceSats, receivedSats, nextFeeSats = 0) {
+  return Math.max(0, faceSats - receivedSats, nextFeeSats);
+}
+
+export function assertWithinFeeCap(amountSats, maxSats) {
+  if (amountSats > maxSats) {
+    throw new Error("Amount exceeds what remains after mint fees.");
+  }
+}
+
+/** Balance, mint input fee, and the largest amount a regift can lock. */
+export function spendableFromWallet(wallet, proofs) {
+  const balanceSats = sumSats(proofs);
+  return {
+    balanceSats,
+    feeSats: feeSatsForProofs(wallet, proofs),
+    maxSats: maxSpendableSats(wallet, proofs),
+  };
+}
+
+export async function spendableSats(proofs) {
+  return spendableFromWallet(await getWallet(), proofs);
+}
+
 export async function claimGift(fragment) {
   const { token, giftPriv } = parseFragment(fragment);
-  inspectGift(fragment);
+  const meta = inspectGift(fragment);
   const wallet = await getWallet();
   const proofs = await wallet.ops.receive(token).privkey(giftPriv).run();
-  return { proofs: serializeProofs(proofs), amountSats: sumSats(proofs) };
+  const serialized = serializeProofs(proofs);
+  const amountSats = sumSats(serialized);
+  return {
+    proofs: serialized,
+    amountSats,
+    feeSats: reportedClaimFee(
+      meta.amountSats,
+      amountSats,
+      feeSatsForProofs(wallet, serialized),
+    ),
+  };
 }
 
 export async function regift(proofs, amountSats, opts = {}) {
   const lockSeconds = opts.lockSeconds ?? LOCKTIME_SECONDS;
   const wallet = await getWallet();
+  const maxSats = maxSpendableSats(wallet, proofs);
+  assertWithinFeeCap(amountSats, maxSats);
   const gift = makeKeypair();
   const refund = makeKeypair();
   const locktime = Math.floor(Date.now() / 1000) + lockSeconds;
@@ -188,6 +240,7 @@ export async function regift(proofs, amountSats, opts = {}) {
     locktime,
     change: serializeProofs(keep),
     amountSats: sumSats(send),
+    feeSats: Math.max(0, sumSats(proofs) - sumSats(send) - sumSats(keep)),
     token,
   };
 }

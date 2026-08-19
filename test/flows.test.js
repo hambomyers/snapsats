@@ -13,7 +13,11 @@ import {
   parseFragment,
   inspectGift,
   sumSats,
+  spendableFromWallet,
+  reportedClaimFee,
+  assertWithinFeeCap,
 } from "../src/token.js";
+import { Amount } from "@cashu/cashu-ts";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -159,6 +163,34 @@ describe("SnapSats token flows", () => {
   it("inspectGift is local and rejects a non-gift fragment", () => {
     expect(() => inspectGift("not-a-gift")).toThrow(/not a SnapSats gift/);
   });
+
+  it(
+    "nonzero-fee keyset: claim reports fee, picker caps, regift-at-max",
+    async () => {
+      expect(reportedClaimFee(16, 16, 2)).toBe(2);
+      expect(reportedClaimFee(16, 14, 0)).toBe(2);
+      const created = await createGift(16);
+      await waitPaid(created);
+      const gift = await created.finalize();
+      const claimed = await claimGift(gift.link.split("#")[1]);
+      const fakeKeyset = {
+        getFeesForProofs: () => Amount.from(2),
+        maxSpendableAfterFees: (proofs) =>
+          Amount.from(Math.max(0, sumSats(proofs) - 2)),
+      };
+      const cap = spendableFromWallet(fakeKeyset, claimed.proofs);
+      expect(cap.feeSats).toBe(2);
+      expect(cap.maxSats).toBe(claimed.amountSats - 2);
+      expect(cap.maxSats).toBeLessThan(cap.balanceSats);
+      expect(() => assertWithinFeeCap(cap.balanceSats, cap.maxSats)).toThrow(
+        /fees/,
+      );
+      const passed = await regift(claimed.proofs, cap.maxSats);
+      expect(passed.amountSats).toBeGreaterThan(0);
+      expect(passed.amountSats).toBeLessThanOrEqual(cap.maxSats);
+    },
+    120_000,
+  );
 
   it("preview metadata is static, absolute, and fragment-free", () => {
     const html = readFileSync(join(ROOT, "index.html"), "utf8");

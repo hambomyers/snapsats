@@ -161,6 +161,11 @@ function viewTeaser() {
   `;
 }
 
+function mintFeeLine(feeSats) {
+  if (!feeSats) return "";
+  return `<p class="footnote">mint fee: ${esc(String(feeSats))} sats</p>`;
+}
+
 function viewOwned() {
   const approx = approxUsd(state.amountSats);
   return `
@@ -173,6 +178,7 @@ function viewOwned() {
       <button type="button" data-act="keep">Keep it</button>
       <button type="button" class="ghost" data-act="pass">Pass some on</button>
     </div>
+    ${mintFeeLine(state.feeSats)}
     <p class="footnote warn">don't just close this tab — pick one</p>
   `;
 }
@@ -211,7 +217,8 @@ function viewWallet() {
 }
 
 function viewPass() {
-  const buttons = passButtons(state.amountSats)
+  const cap = state.maxSats ?? state.amountSats;
+  const buttons = passButtons(state.amountSats, cap)
     .map(
       (b) =>
         `<button type="button" class="ghost" data-act="regift" data-sats="${b.sats}">${esc(b.label)}</button>`,
@@ -221,23 +228,25 @@ function viewPass() {
     <h1 class="headline">Pass some on</h1>
     <p class="body">You have ${esc(formatSats(state.amountSats))}. Choose an amount to send. You keep the rest.</p>
     <div class="stack">${buttons}</div>
+    ${mintFeeLine(state.feeSats)}
   `;
 }
 
-function passButtons(balance) {
+function passButtons(balance, maxSats = balance) {
+  const cap = Math.min(Math.max(0, maxSats), Math.max(0, balance - 1));
   const out = [];
   if (usdPerBtc) {
     for (const usd of USD_AMOUNTS) {
       const sats = satsFromUsd(usd);
-      if (sats && sats < balance) out.push({ sats, label: `$${usd}` });
+      if (sats && sats <= cap) out.push({ sats, label: `$${usd}` });
     }
   }
   if (out.length === 0) {
-    const half = Math.max(1, Math.floor(balance / 2));
-    const rest = Math.max(1, balance - 1);
+    const half = Math.max(1, Math.floor(cap / 2));
+    const rest = cap;
     const seen = new Set();
     for (const sats of [half, rest]) {
-      if (sats >= balance || seen.has(sats)) continue;
+      if (sats < 1 || sats > cap || seen.has(sats)) continue;
       seen.add(sats);
       out.push({
         sats,
@@ -395,6 +404,7 @@ const actions = {
         name: "owned",
         proofs: claimed.proofs,
         amountSats: claimed.amountSats,
+        feeSats: claimed.feeSats,
       });
     } catch {
       setState({
@@ -439,11 +449,14 @@ const actions = {
       cashu,
     });
   },
-  pass() {
+  async pass() {
+    const cap = await token.spendableSats(state.proofs);
     setState({
       name: "pass",
       proofs: state.proofs,
-      amountSats: state.amountSats,
+      amountSats: cap.balanceSats,
+      feeSats: cap.feeSats,
+      maxSats: cap.maxSats,
     });
   },
   async regift(btn) {
