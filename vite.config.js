@@ -8,6 +8,7 @@ import { viteSingleFile } from "vite-plugin-singlefile";
 
 export default defineConfig({
   plugins: [viteSingleFile()],
+  base: "./",
   build: {
     assetsInlineLimit: Infinity,
     cssCodeSplit: false,
