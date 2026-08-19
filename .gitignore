@@ -1,0 +1,5 @@
+# Not in DEVELOPMENT.md's tree: git needs an ignore list so we never ship
+# node_modules, the build output, or secrets. Cannot be a deletion.
+node_modules
+dist
+.env
