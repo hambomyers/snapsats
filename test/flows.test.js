@@ -1,6 +1,9 @@
 /**
  * Live against testnut. Never real sats. Fragment hygiene is the load-bearing test.
  */
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   createGift,
@@ -11,6 +14,8 @@ import {
   inspectGift,
   sumSats,
 } from "../src/token.js";
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 const TEST_SATS = 8;
 const intercepted = [];
@@ -58,6 +63,9 @@ afterAll(() => {
 
 function assertFragmentHygiene(token, ...secrets) {
   for (const entry of intercepted) {
+    expect(entry.url.includes("#"), `fragment on the wire: ${entry.url}`).toBe(
+      false,
+    );
     const hay = leakHaystacks(entry);
     expect(hay.includes(token), `token leaked to ${entry.url}`).toBe(false);
     for (const secret of secrets) {
@@ -150,5 +158,26 @@ describe("SnapSats token flows", () => {
 
   it("inspectGift is local and rejects a non-gift fragment", () => {
     expect(() => inspectGift("not-a-gift")).toThrow(/not a SnapSats gift/);
+  });
+
+  it("preview metadata is static, absolute, and fragment-free", () => {
+    const html = readFileSync(join(ROOT, "index.html"), "utf8");
+    expect(html).toContain("<title>SnapSats — bitcoin you can text</title>");
+    expect(html).toContain('property="og:title" content="A bitcoin gift 🎁"');
+    expect(html).toContain(
+      'property="og:description" content="Tap to open it. No app needed."',
+    );
+    expect(html).toContain('property="og:site_name" content="SnapSats"');
+    expect(html).toContain('property="og:url" content="https://snapsats.app"');
+    expect(html).toContain(
+      'property="og:image" content="https://snapsats.app/og.png"',
+    );
+    expect(html).not.toMatch(/property="og:image" content="\.\//);
+    expect(html).not.toMatch(/property="og:image" content="\//);
+    expect(html.includes("#cashu")).toBe(false);
+    expect(html.includes("~")).toBe(false);
+    for (const entry of intercepted) {
+      expect(new URL(entry.url, "https://snapsats.app").hash).toBe("");
+    }
   });
 });

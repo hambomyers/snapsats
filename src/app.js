@@ -479,7 +479,7 @@ const actions = {
   async share() {
     try {
       if (navigator.share) {
-        await navigator.share({ url: state.link, text: state.link });
+        await navigator.share({ title: "A bitcoin gift 🎁", url: state.link });
         return;
       }
     } catch (err) {
