@@ -134,3 +134,26 @@ Native apps · accounts · permission dialogs · our own mint · KYC · fiat/car
 funding · free-form amounts · configuration screens · amounts worth crying
 over · backend services · analytics · a Spend button in v0 · tokens/points/
 anything that isn't bitcoin · a business model
+
+## Deploy
+
+Fewer parts than a second branch: GitHub Actions builds `dist/` and publishes it. `CNAME` lives in the repo (and `public/`, so Vite copies it into `dist/`).
+
+1. Push to GitHub.
+2. Settings → Pages → Source: **GitHub Actions**.
+3. Custom domain: `snapsats.app`. Enforce HTTPS.
+4. DNS (once the Pages site exists):
+
+```
+snapsats.app.     A      185.199.108.153
+snapsats.app.     A      185.199.109.153
+snapsats.app.     A      185.199.110.153
+snapsats.app.     A      185.199.111.153
+snapsats.app.     AAAA   2606:50c0:8000::153
+snapsats.app.     AAAA   2606:50c0:8001::153
+snapsats.app.     AAAA   2606:50c0:8002::153
+snapsats.app.     AAAA   2606:50c0:8003::153
+www.snapsats.app. CNAME  <you>.github.io.
+```
+
+The shipped artifact is `dist/index.html` (one file). It also renders from `file://`. Offline, the page still paints; the price feed and mint calls fail closed (sats-only labels, no invoice until the mint answers).
