@@ -279,9 +279,7 @@ function viewLink() {
 function viewPick() {
   const buttons = USD_AMOUNTS.map((usd, i) => {
     const sats = satsFromUsd(usd);
-    const label = sats
-      ? `$${usd}`
-      : formatSats(FALLBACK_SATS[i]);
+    const label = sats ? `$${usd}` : formatSats(FALLBACK_SATS[i]);
     const value = sats || FALLBACK_SATS[i];
     return `<button type="button" class="${i === 0 ? "" : "ghost"}" data-act="send" data-sats="${value}" data-usd="${usd}">${esc(label)}</button>`;
   }).join("");
@@ -289,12 +287,38 @@ function viewPick() {
     ? ""
     : `<p class="footnote">price feed is down — amounts are sats, labeled honestly</p>`;
   return `
+    ${reclaimBanner()}
     <p class="glyph" aria-hidden="true">🎁</p>
     <h1 class="headline">Send bitcoin as a text</h1>
     <p class="body">Pick an amount. They tap the link. That's it.</p>
     <div class="stack">${buttons}</div>
     ${feedNote}
   `;
+}
+
+function reclaimBanner() {
+  const r = state.reclaim;
+  if (!r) return "";
+  if (r.status === "ready") {
+    return `<div class="banner">
+      <p>A gift you sent can come back now.</p>
+      <button type="button" data-act="reclaim">Take it back</button>
+    </div>`;
+  }
+  if (r.status === "working") {
+    return `<div class="banner"><p>Taking it back…</p></div>`;
+  }
+  if (r.status === "taken") {
+    return `<div class="banner"><p>Taken back. ${esc(formatSats(r.amountSats))} are on this phone.</p></div>`;
+  }
+  if (r.status === "raced") {
+    return `<div class="banner"><p>They opened it first. The gift is theirs.</p></div>`;
+  }
+  if (r.status === "error") {
+    return `<div class="banner"><p>Could not take it back. Try again.</p>
+      <button type="button" data-act="reclaim">Take it back</button></div>`;
+  }
+  return "";
 }
 
 function viewInvoice() {
@@ -496,6 +520,31 @@ const actions = {
     location.hash = "";
     boot();
   },
+  async reclaim() {
+    const gift = state.reclaim?.gift;
+    if (!gift) return;
+    setState({ name: "pick", reclaim: { status: "working", gift } });
+    try {
+      const result = await token.reclaim(gift.refundKey, gift.lockedProofs);
+      store.removePending(gift.id);
+      if (result.alreadyClaimed) {
+        setState({ name: "pick", reclaim: { status: "raced" } });
+        return;
+      }
+      const held = store.getHeld();
+      const proofs = [...(held?.proofs || []), ...result.proofs];
+      store.setHeld({ proofs, amountSats: token.sumSats(proofs) });
+      setState({
+        name: "pick",
+        reclaim: { status: "taken", amountSats: token.sumSats(result.proofs) },
+      });
+    } catch {
+      setState({
+        name: "pick",
+        reclaim: { status: "error", gift },
+      });
+    }
+  },
 };
 
 async function copy(text) {
@@ -574,7 +623,12 @@ async function boot() {
     await bootClaim(location.hash);
     return;
   }
-  setState({ name: "pick" });
+  const now = Date.now() / 1000;
+  const due = store.getPending().find((g) => g.locktime && g.locktime <= now);
+  setState({
+    name: "pick",
+    reclaim: due ? { status: "ready", gift: due } : null,
+  });
 }
 
 window.addEventListener("hashchange", () => boot());
