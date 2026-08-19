@@ -3,8 +3,33 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark light" />
     <title>SnapSats</title>
+    <meta name="description" content="Bitcoin you can text. A wallet that opens when they tap." />
+    <meta property="og:title" content="A bitcoin gift 🎁 — snapsats.app" />
+    <meta property="og:description" content="Tap the link. It's yours. No app, no account." />
+    <meta property="og:url" content="https://snapsats.app" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="SnapSats" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="A bitcoin gift 🎁 — snapsats.app" />
+    <meta name="twitter:description" content="Tap the link. It's yours. No app, no account." />
     <meta name="theme-color" content="#0E0F12" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="SnapSats" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230E0F12'/%3E%3Crect x='7' y='14' width='18' height='12' rx='2' fill='%23F7931A'/%3E%3Crect x='6' y='11' width='20' height='5' rx='1.5' fill='%23F7931A'/%3E%3Crect x='15' y='11' width='2' height='15' fill='%230E0F12'/%3E%3C/svg%3E"
+    />
+    <link
+      rel="apple-touch-icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230E0F12'/%3E%3Crect x='7' y='14' width='18' height='12' rx='2' fill='%23F7931A'/%3E%3Crect x='6' y='11' width='20' height='5' rx='1.5' fill='%23F7931A'/%3E%3Crect x='15' y='11' width='2' height='15' fill='%230E0F12'/%3E%3C/svg%3E"
+    />
+    <link
+      rel="manifest"
+      href="data:application/manifest+json,%7B%22name%22%3A%22SnapSats%22%2C%22short_name%22%3A%22SnapSats%22%2C%22display%22%3A%22standalone%22%2C%22start_url%22%3A%22%2F%22%2C%22background_color%22%3A%22%230E0F12%22%2C%22theme_color%22%3A%22%230E0F12%22%7D"
+    />
+    <!-- No service worker: navigator.storage.persist() does not need one, and a SW is another cache that can strand a gift. -->
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>

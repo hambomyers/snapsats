@@ -156,7 +156,7 @@ function viewTeaser() {
     </div>
     <details class="explain">
       <summary>what is this?</summary>
-      <p>A friend sent you bitcoin as a link. Opening it makes it yours and kills the old link. Small amounts. No app, no account. If you wait past the time above, they can take it back — until then it's yours to open.</p>
+      <p>A friend sent you bitcoin as a link. Opening it makes it yours. Small amounts. No app. After the time above, they can take it back — until then it's yours to open.</p>
     </details>
   `;
 }

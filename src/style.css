@@ -47,7 +47,7 @@ main {
   max-width: 26rem;
   min-height: 100%;
   min-height: 100dvh;
-  padding: 2rem var(--pad) 1.5rem;
+  padding: 1.5rem var(--pad) 1.25rem;
   display: flex;
   flex-direction: column;
 }
@@ -73,9 +73,9 @@ main {
 }
 
 .glyph {
-  font-size: 2.75rem;
+  font-size: 2.5rem;
   line-height: 1;
-  margin: 0.5rem 0 1rem;
+  margin: 0.25rem 0 0.75rem;
 }
 
 .glyph.spring {
@@ -130,7 +130,7 @@ main {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding-top: 1.5rem;
+  padding-top: 1rem;
 }
 
 button,
