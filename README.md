@@ -2,7 +2,7 @@
 
 **Bitcoin you can text. A wallet that opens when they tap.**
 
-Text someone "happy birthday" and $25 in bitcoin. They tap the link. It's theirs. No app, no account, no seed phrase, no signup, no permission dialogs. If they don't open it within 24 hours, it comes back to you automatically. If they do, they can keep it — or pass some on to someone else and become a bitcoin sender ten seconds after becoming a bitcoin owner.
+Text someone "happy birthday" and $25 in bitcoin. They tap the link. It's theirs. No app, no account, no seed phrase, no signup, no permission dialogs. If they don't open it within 24 hours, come back to this page to take it back. If they do, they can keep it — or pass some on to someone else and become a bitcoin sender ten seconds after becoming a bitcoin owner.
 
 That's the whole product. → snapsats.app
 
@@ -43,10 +43,10 @@ RECIPIENT taps
         new link, new 24h timer,
         NO new funding needed —
         loops back to LINK
-[unclaimed at 24h? token returns
- to sender automatically — the
- timelock is in the token itself,
- not on anyone's server]
+[unclaimed at 24h? come back here
+ to take it back — the timelock
+ is in the token itself, not on
+ anyone's server. Pull, not push.]
 ```
 
 Only the **first** sender in any chain ever funds anything. Everyone downstream is both recipient and sender with zero setup. The money carries its own UI, because the UI is a link and the link travels with the money.
@@ -81,7 +81,7 @@ Dollar framing earns the tap ("$25 in bitcoin" in the text preview — bait with
 
 ## What this is, technically
 
-A gift is a Cashu ecash token — a bearer string that *is* the money, backed by a mint, settled over Bitcoin's Lightning Network — wrapped in a link with the secret in the URL fragment. Tokens are time-locked: unclaimed gifts return to the sender, enforced by the token itself. First open sweeps funds to a fresh key, so the link in the message thread dies the moment it's used.
+A gift is a Cashu ecash token — a bearer string that *is* the money, backed by a mint, settled over Bitcoin's Lightning Network — wrapped in a link with the secret in the URL fragment. Tokens are time-locked: after 24 hours the sender can reclaim an unclaimed gift (the mint will not push it back — you have to come back and take it). First open sweeps funds to a fresh key, so the link in the message thread dies the moment it's used. After the deadline the recipient can still open it until you do; first spend wins.
 
 ## Honest limits — read this part
 

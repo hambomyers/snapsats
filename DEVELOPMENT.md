@@ -10,13 +10,13 @@ High-level only. The moment this document needs a table of contents, we've faile
 
 - **Money layer:** Cashu ecash (via `cashu-ts`). The token is the money.
 - **Trust layer:** ONE vetted, reputable mint in v0. A shortlist lives in `mints.js` for swapping; users never see a mint choice.
-- **Security layer:** claim-then-rotate (link dies on first open) + protocol-level timelock (auto-reclaim at 24h). No accounts, no auth in v0. Optional "secure this" upgrades come later.
+- **Security layer:** claim-then-rotate (link dies on first open) + protocol-level timelock (sender reclaim after 24h — pull, not push). No accounts, no auth in v0. Optional "secure this" upgrades come later.
 - **Transport layer:** none of our business. SMS, iMessage, WhatsApp, a QR on a napkin.
 - **Backend:** there isn't one. Static hosting (GitHub Pages → snapsats.app). Load-bearing minimalism: no server means no custody, no user data, no single point of failure.
 
 ## v0 scope — the whole thing
 
-**Send:** pick $5 / $10 / $25 / $50 (no free entry — four buttons, cap is structural) → pay one Lightning invoice → get link + 24h timer → text it yourself from your own messaging app. Auto-reclaim at expiry.
+**Send:** pick $5 / $10 / $25 / $50 (no free entry — four buttons, cap is structural) → pay one Lightning invoice → get link + 24h timer → text it yourself from your own messaging app. After expiry, return to this page to take it back.
 
 **Claim:** three screens, two taps total from text to ownership.
 
@@ -47,7 +47,9 @@ Screen 2 — tap the link, browser opens, one button:
 │  │     Open it       │  │
 │  └───────────────────┘  │
 │                         │
-│  ⏱ disappears in 22h    │
+│  yours until 9:14 pm —  │
+│  after that they can    │
+│  take it back           │
 │  what is this? ˅        │
 └─────────────────────────┘
 ```
@@ -120,7 +122,7 @@ Growth of this tree requires a written reason in the PR. `src/` exists for sanit
 ## Sequencing
 
 1. Claim flow against a test mint (hardest UX — build first)
-2. Send flow + timelock/auto-reclaim
+2. Send flow + timelock/sender-reclaim (pull)
 3. Pass-some-on loop
 4. Real-device gauntlet: iOS Safari, Android Chrome, links opened from iMessage/WhatsApp/SMS, preview-bot behavior
 5. Friends & family with real (tiny) sats
