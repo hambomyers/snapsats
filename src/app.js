@@ -214,7 +214,7 @@ function viewPass() {
   const buttons = passButtons(state.amountSats)
     .map(
       (b) =>
-        `<button type="button" class="${b.primary ? "" : "ghost"}" data-act="regift" data-sats="${b.sats}">${esc(b.label)}</button>`,
+        `<button type="button" class="ghost" data-act="regift" data-sats="${b.sats}">${esc(b.label)}</button>`,
     )
     .join("");
   return `
@@ -229,7 +229,7 @@ function passButtons(balance) {
   if (usdPerBtc) {
     for (const usd of USD_AMOUNTS) {
       const sats = satsFromUsd(usd);
-      if (sats && sats < balance) out.push({ sats, label: `$${usd}`, primary: out.length === 0 });
+      if (sats && sats < balance) out.push({ sats, label: `$${usd}` });
     }
   }
   if (out.length === 0) {
@@ -242,7 +242,6 @@ function passButtons(balance) {
       out.push({
         sats,
         label: formatSats(sats),
-        primary: out.length === 0,
       });
     }
   }
@@ -281,7 +280,7 @@ function viewPick() {
     const sats = satsFromUsd(usd);
     const label = sats ? `$${usd}` : formatSats(FALLBACK_SATS[i]);
     const value = sats || FALLBACK_SATS[i];
-    return `<button type="button" class="${i === 0 ? "" : "ghost"}" data-act="send" data-sats="${value}" data-usd="${usd}">${esc(label)}</button>`;
+    return `<button type="button" class="ghost" data-act="send" data-sats="${value}" data-usd="${usd}">${esc(label)}</button>`;
   }).join("");
   const feedNote = usdPerBtc
     ? ""
@@ -335,9 +334,12 @@ function viewInvoice() {
 }
 
 function viewError() {
+  const body = state.message
+    ? `<p class="body">${esc(state.message)}</p>`
+    : "";
   return `
     <h1 class="headline">${esc(state.title || "That didn't work")}</h1>
-    <p class="body">${esc(state.message)}</p>
+    ${body}
     <div class="stack">
       <button type="button" data-act="home">Start over</button>
     </div>
@@ -610,8 +612,8 @@ async function bootClaim(fragment) {
   } catch {
     setState({
       name: "error",
-      title: "This link isn't a gift",
-      message: "The secret in the link is missing or damaged.",
+      title: "This link isn't a valid gift — it may be damaged or incomplete.",
+      message: "",
     });
   }
 }
